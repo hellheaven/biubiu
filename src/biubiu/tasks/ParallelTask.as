@@ -4,53 +4,66 @@ package biubiu.tasks
 
 	/**
 	 * ParallelTask
-	 * to executes task parallely 
 	 * @author hbb
 	 * 
 	 */
-	public class ParallelTask extends AbstractTask implements ITask
+	public class ParallelTask extends MultiTask implements ITask
 	{
-		private var _tasks:Array;
 		private var _count:int;
+		/**
+		 * Constructor 
+		 * @param tasks
+		 * 
+		 */
 		public function ParallelTask(...tasks)
 		{
-			_tasks = tasks ? tasks.slice(0) : [];
-		}
-		
-		/**
-		 * add a task 
-		 * @param task
-		 */
-		public function add( task:ITask ):ParallelTask
-		{
-			if(_tasks.indexOf( task ) > -1) return;
-			_tasks.push( task );
-			return this;
+			super(tasks);
 		}
 		
 		override final protected function execute_():void
 		{
-			var i:int, n:int;
-			var task:ITask;
-			
-			_count = 0;
-			
-			for( i=0,n=_tasks.length; i<n; ++i)
-			{
-				task = _tasks[i];
-				task.broadcaster.addEventListener("TaskComplete", onSubTaskComplete);
-				task.start();
-			}
+			init("start");
 		}
 		
-		protected function onSubTaskComplete(e:Event):void
+		override final protected function undo_():void
 		{
-			var task:ITask = e.target as ITask;
-			task.broadcaster.removeEventListener("TaskComplete", onSubTaskComplete);
+			init("undo");
+		}
+		
+		override protected function onSubTaskComplete(e:TaskEvent):void
+		{
+			super.onSubTaskComplete(e);
 			
 			if( ++_count == _tasks.length )
 			{
 				this.complete();
+			}
+		}
+		
+		override protected function onSubTaskFailed(e:TaskEvent):void
+		{
+			super.onSubTaskFailed(e);
+			
+			if(!isAtomic) return;
+			
+			for each(var task:ITask in _tasks)
+			{
+				task.removeEventListener("TaskComplete", onSubTaskComplete);
+				task.removeEventListener("TaskFailed", onSubTaskFailed);
+			}
+			
+			this.complete();
+		}
+		
+		protected function init( method:String ):void
+		{
+			_count = 0;
+			
+			for each(var task:ITask in _tasks)
+			{
+				task.addEventListener("TaskComplete", onSubTaskComplete);
+				task.addEventListener("TaskFailed", onSubTaskFailed);
+				task[method]();
 			}
 		}
 	}

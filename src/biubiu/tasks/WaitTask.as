@@ -4,10 +4,10 @@ package biubiu.tasks
 	import flash.utils.Timer;
 
 	/**
-	 * Asynchronous Task
+	 * Wait Task
 	 * @author hbb
 	 */
-	public class AsynTask extends AbstractTask implements ITask
+	public class WaitTask extends AbstractTask implements ITask
 	{
 		private var _timer:Timer;
 		private var _delay:Number;
@@ -15,7 +15,7 @@ package biubiu.tasks
 		 * Constructor 
 		 * @param delay, default is 0
 		 */
-		public function AsynTask( delay:Number = 0.0 )
+		public function WaitTask( delay:Number = 0.0 )
 		{
 			_delay = delay > 0 ? delay : 0;
 		}
@@ -28,8 +28,11 @@ package biubiu.tasks
 			}
 			else
 			{
-				_timer = new Timer(_delay);
+				if(!_timer) _timer = new Timer(_delay);
+				_timer.delay = _delay;
 				_timer.addEventListener(TimerEvent.TIMER, onTimer);
+				_timer.stop();
+				_timer.reset();
 				_timer.start();
 			}
 		}
@@ -40,6 +43,11 @@ package biubiu.tasks
 			_timer = null;
 			
 			this.execute();
+		}
+		
+		override protected function undo_():void
+		{
+			start_();
 		}
 	}
 }

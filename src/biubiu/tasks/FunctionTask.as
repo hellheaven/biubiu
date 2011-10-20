@@ -1,5 +1,7 @@
 package biubiu.tasks
 {
+	import flash.events.Event;
+
 	/**
 	 * FunctionTask
 	 * wrap a function to execute 
@@ -9,16 +11,41 @@ package biubiu.tasks
 	{
 		private var _fn:Function;
 		private var _args:Array;
+		private var _undoFn:Function;
+		private var _undoArgs:Array;
 		
-		public function FunctionTask( fn:Function, ...args )
+		/**
+		 * Constructor 
+		 * @param fn
+		 * @param args
+		 * @param undoFn, default is fn
+		 * @param undoArgs, default is args
+		 * 
+		 */
+		public function FunctionTask( fn:Function, args:Array, undoFn:Function = null, undoArgs:Array = null )
 		{
 			_fn = fn;
 			_args = args;
+			_undoFn = undoFn || fn;
+			_undoArgs = undoArgs || args;
 		}
 		
 		override final protected function execute_():void
 		{
-			_fn.apply(null,_args);
+			try{
+				_fn.apply(null, _args);
+			}catch(ex:Error){
+				dispatchEvent(new Event("TaskFailed"));
+			}
+		}
+		
+		override final protected function undo_():void
+		{
+			try{
+				_undoFn.apply(null, _undoArgs);
+			}catch(ex:Error){
+				dispatchEvent(new Event("TaskFailed"));
+			}
 		}
 	}
 }

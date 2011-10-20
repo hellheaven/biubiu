@@ -1,15 +1,16 @@
 package biubiu.tasks
 {
-	import biubiu.events.EventCaster;
-	
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
-	[Event(name="TaskStart", type="flash.events.Event")]
+	[Event(name="TaskStart", type="biubiu.events.TaskEvent")]
 	
-	[Event(name="TaskExecute", type="flash.events.Event")]
+	[Event(name="TaskExecute", type="biubiu.events.TaskEvent")]
 	
-	[Event(name="TaskComplete", type="flash.events.Event")]
+	[Event(name="TaskComplete", type="biubiu.events.TaskEvent")]
+	
+	[Event(name="TaskFailed", type="biubiu.events.TaskEvent")]
+	
+	[Event(name="TaskUndo", type="biubiu.events.TaskEvent")]
 	
 	
 	/**
@@ -18,11 +19,10 @@ package biubiu.tasks
 	 * 
 	 * @author hbb
 	 */
-	public class AbstractTask implements ITask
+	public class AbstractTask extends EventDispatcher implements ITask
 	{
 		public function AbstractTask()
 		{
-			throw new Error("You can not instantiate an abstract task.");
 		}
 		
 		/**
@@ -30,13 +30,12 @@ package biubiu.tasks
 		 */
 		public final function start():void
 		{
-			broadcast.dispatchEvent(new Event("TaskStart"));
+			dispatchEvent(new TaskEvent(TaskEvent.START));
 			start_();
 		}
 		
 		/**
-		 * essential start implemention
-		 * child class should override this
+		 * real start implemention
 		 */
 		protected function start_():void
 		{
@@ -48,13 +47,12 @@ package biubiu.tasks
 		 */
 		public final function execute():void
 		{
-			broadcast.dispatchEvent(new Event("TaskExecute"));
+			dispatchEvent(new TaskEvent(TaskEvent.EXECUTE));
 			execute_();
 		}
 		
 		/**
-		 * essential execute implemention 
-		 * child class should override this
+		 * real execute implemention
 		 */
 		protected function execute_():void
 		{
@@ -66,16 +64,36 @@ package biubiu.tasks
 		 */
 		public final function complete():void
 		{
-			broadcast.dispatchEvent(new Event("TaskComplete"));
+			dispatchEvent(new TaskEvent(TaskEvent.COMPLETE));
 		}
 		
 		/**
 		 * @inheritDoc 
 		 */
-		public function get broadcast():EventDispatcher
+		public final function undo():void
 		{
-			return _broadcast;
+			dispatchEvent(new TaskEvent(TaskEvent.UNDO));
+			undo_();
+		}	
+		
+		/**
+		 * real undo implemention 
+		 */
+		protected function undo_():void
+		{
+			complete();
 		}
-		private var _broadcast:EventCaster = new EventCaster();
+		
+		/**
+		 * optmize dispatch event 
+		 * @param type
+		 */
+		override public function dispatchEvent( e:TaskEvent ):void
+		{
+			if(hasEventListener(e.type))
+			{
+				dispatchEvent( e );
+			}
+		}
 	}
 }

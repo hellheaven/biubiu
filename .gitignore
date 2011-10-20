@@ -1,0 +1,9 @@
+html-template/*
+history/*
+.actionScriptProperties
+.project
+.settings/org.eclipse.core.resources.prefs
+playerProductInstall.swf
+*.swf
+*.html
+*.js

@@ -1,55 +1,70 @@
 package biubiu.tasks
 {
-	import flash.events.Event;
-
 	/**
 	 * SequentTask
 	 * to executes task sequently 
 	 * @author hbb
 	 * 
 	 */
-	public class SequentTask extends AbstractTask implements ITask
+	public class SequentTask extends MultiTask implements ITask
 	{
 		private var _tasks:Array;
 		
+		private var _currIndex:int;
+		private var _indexStep:int;
+		private var _taskMethod:String;
+		
 		public function SequentTask(...tasks)
 		{
-			// reverse
 			_tasks = tasks ? tasks.slice(0) : [];
-		}
-		
-		/**
-		 * add a task 
-		 * @param task
-		 */
-		public function add( task:ITask ):SequentTask
-		{
-			if(_tasks.indexOf( task ) > -1) return;
-			_tasks.push( task );
-			return this;
 		}
 		
 		override final protected function execute_():void
 		{
-			var task:ITask;
+			_currIndex = 0;
+			_indexStep = 1;
+			_taskMethod = "start";
 			
-			if( _tasks.length == 0 )
+			executeTasks();
+		}
+		
+		override final protected function undo_():void
+		{
+			_currIndex = _tasks.length - 1;
+			_indexStep = -1;
+			_taskMethod = "undo";
+			
+			executeTasks();
+		}
+		
+		override protected function onSubTaskComplete(e:TaskEvent):void
+		{
+			super.onSubTaskComplete(e);
+			executeTasks();
+		}
+		
+		override protected function onSubTaskFailed(e:TaskEvent):void
+		{
+			super.onSubTaskFailed(e);
+			
+			if(isAtomic) this.complete();
+		}
+		
+		private function executeTasks():void
+		{
+			var task:ITask = _tasks[_currIndex];
+			_currIndex += _indexStep;
+			
+			if( !task );
 			{
 				this.complete();
 			}
 			else
 			{
-				task = _tasks.shift();
-				task.broadcaster.addEventListener("TaskComplete", onSubTaskComplete);
-				task.start();
+				task.addEventListener(TaskEvent.COMPLETE, onSubTaskComplete);
+				task.addEventListener(TaskEvent.FAILED, onSubTaskFailed);
+				task[_taskMethod]();
 			}
-		}
-		
-		protected function onSubTaskComplete(e:Event):void
-		{
-			var task:ITask = e.target as ITask;
-			task.broadcaster.removeEventListener("TaskComplete", onSubTaskComplete);
-			this.execute_();
 		}
 	}
 }

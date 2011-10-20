@@ -1,11 +1,11 @@
 package biubiu.tasks
 {
-	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
 
-	public interface ITask
+	public interface ITask extends IEventDispatcher
 	{
 		/**
-		 * start to execute 
+		 * start to execute task
 		 */
 		function start():void;
 		/**
@@ -16,9 +16,10 @@ package biubiu.tasks
 		 * complete execution 
 		 */
 		function complete():void;
+		
 		/**
-		 * to broadcast event
+		 * undo task 
 		 */
-		function get broadcaster():EventDispatcher;
+		function undo():void;
 	}
 }
