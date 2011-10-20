@@ -16,10 +16,13 @@ package biubiu.tasks
 		 * complete execution 
 		 */
 		function complete():void;
-		
 		/**
 		 * undo task 
 		 */
 		function undo():void;
+		/**
+		 * fail task 
+		 */		
+		function fail():void;
 	}
 }

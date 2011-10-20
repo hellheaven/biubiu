@@ -85,6 +85,14 @@ package biubiu.tasks
 		}
 		
 		/**
+		 * @inheritDoc 
+		 */
+		public final function fail():void
+		{
+			dispatchEvent(new TaskEvent(TaskEvent.FAILED));
+		}
+		
+		/**
 		 * optmize dispatch event 
 		 * @param type
 		 */

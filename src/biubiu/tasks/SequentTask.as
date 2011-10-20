@@ -47,7 +47,7 @@ package biubiu.tasks
 		{
 			super.onSubTaskFailed(e);
 			
-			if(isAtomic) this.complete();
+			if(isAtomic) this.fail();
 		}
 		
 		private function executeTasks():void

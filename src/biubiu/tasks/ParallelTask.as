@@ -52,7 +52,7 @@ package biubiu.tasks
 				task.removeEventListener("TaskFailed", onSubTaskFailed);
 			}
 			
-			this.complete();
+			this.fail();
 		}
 		
 		protected function init( method:String ):void

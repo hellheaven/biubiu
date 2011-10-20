@@ -35,7 +35,7 @@ package biubiu.tasks
 			try{
 				_fn.apply(null, _args);
 			}catch(ex:Error){
-				dispatchEvent(new Event("TaskFailed"));
+				fail();
 			}
 		}
 		
@@ -44,7 +44,7 @@ package biubiu.tasks
 			try{
 				_undoFn.apply(null, _undoArgs);
 			}catch(ex:Error){
-				dispatchEvent(new Event("TaskFailed"));
+				fail();
 			}
 		}
 	}
